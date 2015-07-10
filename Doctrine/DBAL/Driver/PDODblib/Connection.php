@@ -30,6 +30,13 @@ class Connection extends \Doctrine\DBAL\Driver\PDOConnection implements \Doctrin
 
     protected $_pdoTransactionsSupport = null;
     protected $_pdoLastInsertIdSupport = null;
+        
+    public function __construct($dsn, $user = null, $password = null, $options = null)
+    {
+        parent::__construct($dsn, $user, $password, $options);
+        $this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, array(__NAMESPACE__ . '\PDOStatement', array()));
+    }
+    
     /**
      * @override
      */
@@ -38,20 +45,8 @@ class Connection extends \Doctrine\DBAL\Driver\PDOConnection implements \Doctrin
 
         // Fix for a driver version terminating all values with null byte
         $val = rtrim($val, "\0");
-        
-        // Freetds communicates with the server using UCS-2 (since v7.0).
-        // Freetds claims to convert from any given client charset to UCS-2 using iconv. Which should strip or replace unsupported chars. 
-        // However in my experience, characters like 👍 (THUMBS UP SIGN, \u1F44D) end up in MSSQL shouting 'incorrect syntax' still.
-        $val = static::replaceNonUcs2Chars($val);
 
         return $val;
-    }
-    
-    public static function replaceNonUcs2Chars($val)
-    {
-        // UCS-2 cannot represent unicode code points outside the BMP. (> 16 bits.)
-        // Replace those chars with the REPLACEMENT CHARACTER.
-        return preg_replace('/[^\x{0}-x{FFFF}]/u', "\xFFFD", $val);
     }
 
     /**
