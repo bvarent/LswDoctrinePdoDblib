@@ -29,7 +29,7 @@ class PDOStatement extends \Doctrine\DBAL\Driver\PDOStatement
      */
     public static function replaceNonUcs2Chars($val)
     {
-        return is_string($val) ? \preg_replace('/[^\x{0}-x{FFFF}]/u', "�", $val) : $val;
+        return is_string($val) ? \preg_replace('/[^\x{0}-\x{FFFF}]/u', "�", $val) : $val;
     }
     
     
